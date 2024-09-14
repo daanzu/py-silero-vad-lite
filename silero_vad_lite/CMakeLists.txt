@@ -13,10 +13,25 @@ add_library(silero_vad SHARED silero_vad.cpp)
 target_link_libraries(silero_vad PRIVATE ONNXRuntime::ONNXRuntime)
 
 # Set the output name of the library
-set_target_properties(silero_vad PROPERTIES
-    OUTPUT_NAME "silero_vad"
-    PREFIX ""
-)
+if(WIN32)
+    set_target_properties(silero_vad PROPERTIES
+        OUTPUT_NAME "silero_vad"
+        PREFIX ""
+        SUFFIX ".dll"
+    )
+elseif(APPLE)
+    set_target_properties(silero_vad PROPERTIES
+        OUTPUT_NAME "silero_vad"
+        PREFIX ""
+        SUFFIX ".dylib"
+    )
+else()
+    set_target_properties(silero_vad PROPERTIES
+        OUTPUT_NAME "silero_vad"
+        PREFIX ""
+        SUFFIX ".so"
+    )
+endif()
 
 # Install the library
 install(TARGETS silero_vad DESTINATION .)

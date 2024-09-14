@@ -1,10 +1,12 @@
 import ctypes
 import os
+import platform
 
 class SileroVAD:
     def __init__(self, model_path):
         # Load the shared library
-        lib_path = os.path.join(os.path.dirname(__file__), 'silero_vad.so')
+        lib_name = self._get_lib_name()
+        lib_path = os.path.join(os.path.dirname(__file__), lib_name)
         self.lib = ctypes.CDLL(lib_path)
 
         # Define function prototypes
@@ -26,3 +28,12 @@ class SileroVAD:
     def process(self, data, sample_rate):
         float_array = (ctypes.c_float * len(data))(*data)
         return self.lib.SileroVAD_process(self.obj, float_array, len(data), sample_rate)
+
+    @staticmethod
+    def _get_lib_name():
+        if platform.system() == "Windows":
+            return "silero_vad.dll"
+        elif platform.system() == "Darwin":
+            return "silero_vad.dylib"
+        else:
+            return "silero_vad.so"
