@@ -1,1 +1,32 @@
+# Ignore compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore virtual environment directories
+venv/
+env/
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 .aider*
+
+# Ignore log files
+*.log
+
+# Ignore package build directories
+dist/
+build/
+*.egg-info/
+
+# Ignore local development configuration files
+*.env
+*.env.local
+.env/
+
+# Ignore sensitive or private information
+secrets.ini
+secrets.yaml
