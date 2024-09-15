@@ -1,3 +1,4 @@
+import shutil
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 from setuptools.dist import Distribution
@@ -5,6 +6,8 @@ import os
 import sys
 import platform
 import subprocess
+import urllib.request
+import tarfile
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir):
@@ -18,6 +21,7 @@ class CMakeBuild(build_ext):
         except OSError:
             raise RuntimeError("CMake must be installed to build the following extensions: " + ", ".join(e.name for e in self.extensions))
 
+        self.download_onnxruntime()
         for ext in self.extensions:
             self.build_extension(ext)
 
@@ -39,6 +43,23 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         print(f"CMake: Building: {['cmake', '--build', '.'] + build_args} in {self.build_temp}")
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+
+    def download_onnxruntime(self):
+        onnxruntime_version = '1.19.2'
+        onnxruntime_url = f'https://github.com/microsoft/onnxruntime/releases/download/v{onnxruntime_version}/onnxruntime-linux-x64-{onnxruntime_version}.tgz'
+        onnxruntime_dir = os.path.join(self.build_temp, 'onnxruntime')
+        if not os.path.exists(onnxruntime_dir):
+            os.makedirs(onnxruntime_dir)
+            print(f"Downloading ONNXRuntime from {onnxruntime_url}")
+            file_path, _ = urllib.request.urlretrieve(onnxruntime_url)
+            with tarfile.open(file_path, 'r:gz') as tar:
+                tar.extractall(path=onnxruntime_dir)
+            # Move the contents of the extracted directory (version-specific-named) to the parent directory to ease building
+            extracted_dir = os.path.join(onnxruntime_dir, f'onnxruntime-linux-x64-{onnxruntime_version}')
+            for item in os.listdir(extracted_dir):
+                shutil.move(os.path.join(extracted_dir, item), onnxruntime_dir)
+            os.rmdir(extracted_dir)
+        return onnxruntime_dir
 
 class BinaryDistribution(Distribution):
     def has_ext_modules(self):
