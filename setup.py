@@ -7,9 +7,9 @@ import platform
 import subprocess
 
 class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir=''):
+    def __init__(self, name, sourcedir):
         Extension.__init__(self, name, sources=[])
-        self.sourcedir = os.path.abspath(sourcedir)
+        self.sourcedir = os.path.abspath(os.path.join(sourcedir, 'silero_vad_lite'))
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -62,7 +62,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/yourusername/silero-vad-lite',
     packages=find_packages(),
-    ext_modules=[CMakeExtension('silero_vad_lite')],
+    ext_modules=[CMakeExtension('silero_vad_lite', sourcedir='.')],
     cmdclass=dict(build_ext=CMakeBuild),
     package_data={
         'silero_vad_lite': ['*' + get_lib_extension()],
