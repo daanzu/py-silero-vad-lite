@@ -8,9 +8,7 @@ class SileroVAD:
             model_path = self._get_model_path()
 
         # Load the shared library
-        lib_name = self._get_lib_name()
-        lib_path = os.path.join(os.path.dirname(__file__), lib_name)
-        self.lib = ctypes.CDLL(lib_path)
+        self.lib = ctypes.CDLL(self._get_lib_path())
 
         # Define function prototypes
         self.lib.SileroVAD_new.argtypes = [ctypes.c_char_p]
@@ -34,12 +32,19 @@ class SileroVAD:
 
     @staticmethod
     def _get_lib_name():
-        if platform.system() == "Windows":
-            return "silero_vad.dll"
-        elif platform.system() == "Darwin":
-            return "silero_vad.dylib"
+        base_name = 'silero_vad_lite'
+        if platform.system() == 'Windows':
+            return base_name + '.dll'
+        elif platform.system() == 'Darwin':
+            return base_name + '.dylib'
         else:
-            return "silero_vad.so"
+            return base_name + '.so'
+
+    @classmethod
+    def _get_lib_path(cls):
+        # TODO: Implement a proper way to get the library path
+        # Data Files Support - setuptools 75.1.0.post20240916 documentation (https://setuptools.pypa.io/en/latest/userguide/datafiles.html#accessing-data-files-at-runtime)
+        return os.path.join(os.path.dirname(__file__), 'data', cls._get_lib_name())
 
     @staticmethod
     def _get_model_path():

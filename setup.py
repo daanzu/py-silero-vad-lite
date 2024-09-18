@@ -25,8 +25,9 @@ class CMakeBuild(build_ext):
             self.build_extension(ext)
 
     def build_extension(self, ext):
-        extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir, '-DPYTHON_EXECUTABLE=' + sys.executable]
+        extension_dir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+        extension_dir = os.path.join(extension_dir, 'silero_vad_lite', 'data')
+        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extension_dir, '-DPYTHON_EXECUTABLE=' + sys.executable]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
