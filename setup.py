@@ -12,7 +12,7 @@ import tarfile
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir):
         Extension.__init__(self, name, sources=[])
-        self.sourcedir = os.path.abspath(os.path.join(sourcedir, 'silero_vad_lite'))
+        self.sourcedir = os.path.abspath(os.path.join(sourcedir, 'src', 'silero_vad_lite'))
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -82,9 +82,10 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/yourusername/silero-vad-lite',
-    packages=find_packages(),
+    packages=find_packages(where='src'),
     ext_modules=[CMakeExtension('silero_vad_lite', sourcedir='.')],
     cmdclass=dict(build_ext=CMakeBuild),
+    package_dir={'': 'src'},
     package_data={
         'silero_vad_lite': ['*' + get_lib_extension()],
     },
