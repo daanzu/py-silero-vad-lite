@@ -1,6 +1,9 @@
+import array
 import ctypes
 import os
 import platform
+
+import numpy as np
 
 class SileroVAD:
     def __init__(self, sample_rate, model_path=None):
@@ -27,7 +30,22 @@ class SileroVAD:
             self.lib.SileroVAD_delete(self.obj)
 
     def process(self, data):
-        float_array = (ctypes.c_float * len(data))(*data)
+        if isinstance(data, (bytes, bytearray)):
+            float_array = (ctypes.c_float * len(data)).from_buffer_copy(data)
+        elif isinstance(data, memoryview):
+            float_array = (ctypes.c_float * len(data)).from_buffer(data)
+        elif isinstance(data, array.array):
+            if data.typecode != 'f':
+                raise ValueError("Array must be of type 'f' (float)")
+            float_array = (ctypes.c_float * len(data)).from_buffer(data)
+        elif isinstance(data, np.ndarray):
+            if data.dtype != np.float32:
+                data = data.astype(np.float32)
+            float_array = np.ctypeslib.as_ctypes(data)
+        elif isinstance(data, ctypes.Array):
+            float_array = data
+        else:
+            float_array = (ctypes.c_float * len(data))(*data)
         return self.lib.SileroVAD_process(self.obj, float_array, len(data))
 
     @staticmethod
