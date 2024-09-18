@@ -4,8 +4,7 @@ from silero_vad_lite import SileroVAD
 
 @pytest.fixture
 def silero_vad():
-    # Assuming you have a test ONNX model file
-    return SileroVAD("path/to/test_model.onnx")
+    return SileroVAD()
 
 def test_silero_vad_process(silero_vad):
     # Generate some dummy audio data

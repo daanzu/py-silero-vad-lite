@@ -4,7 +4,6 @@ from setuptools.command.build_ext import build_ext
 from setuptools.dist import Distribution
 import os
 import sys
-import platform
 import subprocess
 import urllib.request
 import tarfile
@@ -62,16 +61,9 @@ class CMakeBuild(build_ext):
         return onnxruntime_dir
 
 class BinaryDistribution(Distribution):
+    # Ensure generation of platform-specific wheels
     def has_ext_modules(self):
         return True
-
-def get_lib_extension():
-    if platform.system() == "Windows":
-        return ".dll"
-    elif platform.system() == "Darwin":
-        return ".dylib"
-    else:
-        return ".so"
 
 setup(
     name='silero-vad-lite',
@@ -86,9 +78,7 @@ setup(
     ext_modules=[CMakeExtension('silero_vad_lite', sourcedir='.')],
     cmdclass=dict(build_ext=CMakeBuild),
     package_dir={'': 'src'},
-    package_data={
-        'silero_vad_lite': ['*' + get_lib_extension()],
-    },
+    include_package_data=True,
     distclass=BinaryDistribution,
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -99,6 +89,10 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Operating System :: POSIX :: Linux',
         'Operating System :: Microsoft :: Windows',
         'Operating System :: MacOS :: MacOS X',

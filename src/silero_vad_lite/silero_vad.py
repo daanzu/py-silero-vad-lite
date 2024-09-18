@@ -4,6 +4,9 @@ import platform
 
 class SileroVAD:
     def __init__(self, model_path):
+        if model_path is None:
+            model_path = self._get_model_path()
+
         # Load the shared library
         lib_name = self._get_lib_name()
         lib_path = os.path.join(os.path.dirname(__file__), lib_name)
@@ -37,3 +40,9 @@ class SileroVAD:
             return "silero_vad.dylib"
         else:
             return "silero_vad.so"
+
+    @staticmethod
+    def _get_model_path():
+        # TODO: Implement a proper way to get the model path
+        # Data Files Support - setuptools 75.1.0.post20240916 documentation (https://setuptools.pypa.io/en/latest/userguide/datafiles.html#accessing-data-files-at-runtime)
+        return os.path.join(os.path.dirname(__file__), 'data', 'silero_vad.onnx')
