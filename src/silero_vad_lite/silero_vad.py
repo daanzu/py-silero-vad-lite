@@ -19,15 +19,23 @@ class SileroVAD:
 
         self.lib.SileroVAD_delete.argtypes = [ctypes.c_void_p]
 
+        self.lib.SileroVAD_get_window_size_samples.argtypes = [ctypes.c_void_p]
+        self.lib.SileroVAD_get_window_size_samples.restype = ctypes.c_size_t
+
         self.lib.SileroVAD_process.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_size_t]
         self.lib.SileroVAD_process.restype = ctypes.c_float
 
         # Create the C++ object
         self.obj = self.lib.SileroVAD_new(model_path.encode('utf-8'), sample_rate)
+        self._window_size_samples = self.lib.SileroVAD_get_window_size_samples(self.obj)  # Constant
 
     def __del__(self):
         if self.obj:
             self.lib.SileroVAD_delete(self.obj)
+
+    @property
+    def window_size_samples(self):
+        return self._window_size_samples
 
     def process(self, data):
         if isinstance(data, (bytes, bytearray)):

@@ -13,7 +13,8 @@ def test_silero_vad_process(silero_vad):
     t = np.linspace(0, duration, int(sample_rate * duration), False)
     audio_data = np.sin(2 * np.pi * 440 * t).astype(np.float32)
 
-    # Process the audio data
+    # Process the audio data, limiting to only the window_size_samples
+    audio_data = audio_data[:silero_vad.window_size_samples]
     result = silero_vad.process(audio_data)
 
     # Check if the result is a float between 0 and 1

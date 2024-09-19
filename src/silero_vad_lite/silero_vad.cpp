@@ -10,8 +10,6 @@ private:
     std::shared_ptr<Ort::Session> session = nullptr;
     Ort::MemoryInfo memory_info;
 
-    const size_t window_size_samples;
-
     std::vector<Ort::Value> ort_inputs;
 
     std::vector<const char *> ort_input_node_names = {"input", "state", "sr"};
@@ -34,6 +32,8 @@ private:
     };
 
 public:
+    const size_t window_size_samples;
+
     SileroVAD(const std::string& model_path, int sample_rate) :
         env(ORT_LOGGING_LEVEL_WARNING, "SileroVAD"),
         memory_info(Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeCPU)),
@@ -88,5 +88,9 @@ extern "C" {
 
     float SileroVAD_process(SileroVAD* vad, float* data, size_t size) {
         return vad->predict(data, size);
+    }
+
+    size_t SileroVAD_get_window_size_samples(SileroVAD* vad) {
+        return vad->window_size_samples;
     }
 }
