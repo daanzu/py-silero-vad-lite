@@ -10,7 +10,7 @@ private:
     std::shared_ptr<Ort::Session> session = nullptr;
     Ort::MemoryInfo memory_info;
 
-    size_t window_size_samples;
+    const size_t window_size_samples;
 
     std::vector<Ort::Value> ort_inputs;
 
@@ -38,15 +38,15 @@ public:
         env(ORT_LOGGING_LEVEL_WARNING, "SileroVAD"),
         memory_info(Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeCPU)),
         ort_state(2 * 1 * 128),
-        ort_sample_rate(1, sample_rate) {
+        ort_sample_rate(1, sample_rate),
+        window_size_samples(32 * (sample_rate / 1000))  // NOTE: ~32 ms * sample_rate_per_ms: 512 samples for 16 kHz, 256 samples for 8 kHz
+    {
         init_engine_threads(1, 1);
         session = std::make_shared<Ort::Session>(env, model_path.c_str(), session_options);
 
         if (sample_rate != 16000 && sample_rate != 8000) {
             throw std::invalid_argument("Sample rate must be 16000 or 8000");
         }
-        size_t sample_rate_per_ms = sample_rate / 1000;
-        window_size_samples = 32 * sample_rate_per_ms;  // NOTE: 32 ms: 512 samples for 16 kHz, 256 samples for 8 kHz
         ort_input_node_shape[1] = window_size_samples;
     }
 
