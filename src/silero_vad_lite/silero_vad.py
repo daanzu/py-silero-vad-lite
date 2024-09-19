@@ -38,8 +38,10 @@ class SileroVAD:
         return self._window_size_samples
 
     def process(self, data):
+        if len(data) <= 0:
+            raise ValueError("Data must not be empty")
         if isinstance(data, (bytes, bytearray)):
-            float_array = (ctypes.c_float * len(data)).from_buffer_copy(data)
+            float_array = (ctypes.c_float * len(data)).from_buffer(data)
         elif isinstance(data, memoryview):
             float_array = (ctypes.c_float * len(data)).from_buffer(data)
         elif isinstance(data, array.array):

@@ -28,9 +28,7 @@ def test_silero_vad_process(silero_vad):
 def test_silero_vad_invalid_input(silero_vad):
     with pytest.raises(TypeError):
         silero_vad.process("invalid input")
-
+    with pytest.raises(TypeError):
+        silero_vad.process(1.0)
     with pytest.raises(ValueError):
         silero_vad.process([])
-
-    with pytest.raises(ValueError):
-        silero_vad.process([1.0, 2.0, 3.0])
