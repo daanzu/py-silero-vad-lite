@@ -1,5 +1,9 @@
+import array
+import copy
+import math
+
 import pytest
-import numpy as np
+
 from silero_vad_lite import SileroVAD
 
 @pytest.fixture
@@ -8,14 +12,16 @@ def silero_vad():
 
 def test_silero_vad_process(silero_vad):
     # Generate some dummy audio data
+    num_samples = silero_vad.window_size_samples
     sample_rate = 16000
-    duration = 1  # 1 second
-    t = np.linspace(0, duration, int(sample_rate * duration), False)
-    audio_data = np.sin(2 * np.pi * 440 * t).astype(np.float32)
+    def audio_data_generator():
+        for i in range(num_samples):
+            t = i / sample_rate
+            yield math.sin(2 * math.pi * 440 * t)
+    audio_data = array.array('f', audio_data_generator())
 
-    # Process the audio data, limiting to only the window_size_samples
-    audio_data = audio_data[:silero_vad.window_size_samples]
-    audio_data_orig = audio_data.copy()
+    # Process the audio data
+    audio_data_orig = copy.deepcopy(audio_data)
     result = silero_vad.process(audio_data)
 
     # Check if the result is a float between 0 and 1
@@ -23,7 +29,7 @@ def test_silero_vad_process(silero_vad):
     assert 0 <= result <= 1
 
     # Check that the data was not modified
-    assert np.array_equal(audio_data, audio_data_orig)
+    assert audio_data == audio_data_orig
 
 def test_silero_vad_invalid_input(silero_vad):
     with pytest.raises(TypeError):
