@@ -15,11 +15,15 @@ def test_silero_vad_process(silero_vad):
 
     # Process the audio data, limiting to only the window_size_samples
     audio_data = audio_data[:silero_vad.window_size_samples]
+    audio_data_orig = audio_data.copy()
     result = silero_vad.process(audio_data)
 
     # Check if the result is a float between 0 and 1
     assert isinstance(result, float)
     assert 0 <= result <= 1
+
+    # Check that the data was not modified
+    assert np.array_equal(audio_data, audio_data_orig)
 
 def test_silero_vad_invalid_input(silero_vad):
     with pytest.raises(TypeError):
