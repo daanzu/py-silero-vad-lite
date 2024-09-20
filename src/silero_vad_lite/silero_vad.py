@@ -3,8 +3,6 @@ import ctypes
 import os
 import platform
 
-import numpy as np
-
 class SileroVAD:
     def __init__(self, sample_rate, model_path=None):
         if model_path is None:
@@ -48,10 +46,6 @@ class SileroVAD:
             if data.typecode != 'f':
                 raise ValueError("Array must be of type 'f' (float)")
             float_array = (ctypes.c_float * len(data)).from_buffer(data)
-        elif isinstance(data, np.ndarray):
-            if data.dtype != np.float32:
-                data = data.astype(np.float32)
-            float_array = np.ctypeslib.as_ctypes(data)
         elif isinstance(data, ctypes.Array):
             float_array = data
         else:
