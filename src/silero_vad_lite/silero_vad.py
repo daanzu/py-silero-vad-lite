@@ -41,21 +41,35 @@ class SileroVAD:
         return self._window_size_samples
 
     def process(self, data):
-        if len(data) <= 0:
+        length = len(data)
+        if length <= 0:
             raise ValueError("Data must not be empty")
         if isinstance(data, (bytes, bytearray)):
-            float_array = (ctypes.c_float * len(data)).from_buffer(data)
+            if isinstance(data, bytes):
+                data = bytearray(data)
+            if length % ctypes.sizeof(ctypes.c_float) != 0:
+                raise ValueError(f"Data length must be a multiple of the size of a float ({ctypes.sizeof(ctypes.c_float)} bytes)")
+            length = length // ctypes.sizeof(ctypes.c_float)
+            float_array = (ctypes.c_float * length).from_buffer(data)
         elif isinstance(data, memoryview):
-            float_array = (ctypes.c_float * len(data)).from_buffer(data)
+            if data.ndim != 1:
+                raise ValueError("Memoryview must be one-dimensional")
+            if data.itemsize != ctypes.sizeof(ctypes.c_float):
+                raise ValueError(f"Memoryview item size must be the size of a float ({ctypes.sizeof(ctypes.c_float)} bytes)")
+            if not data.contiguous:
+                raise ValueError("Memoryview must be contiguous")
+            if data.readonly:
+                raise ValueError("Memoryview must be writable")
+            float_array = (ctypes.c_float * length).from_buffer(data)
         elif isinstance(data, array.array):
             if data.typecode != 'f':
                 raise ValueError("Array must be of type 'f' (float)")
-            float_array = (ctypes.c_float * len(data)).from_buffer(data)
+            float_array = (ctypes.c_float * length).from_buffer(data)
         elif isinstance(data, ctypes.Array):
             float_array = data
         else:
-            float_array = (ctypes.c_float * len(data))(*data)
-        return self.lib.SileroVAD_process(self.obj, float_array, len(data))
+            float_array = (ctypes.c_float * length)(*data)
+        return self.lib.SileroVAD_process(self.obj, float_array, length)
 
     @staticmethod
     def _get_lib_name():
