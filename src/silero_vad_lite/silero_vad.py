@@ -25,11 +25,16 @@ class SileroVAD:
 
         # Create the C++ object
         self.obj = self.lib.SileroVAD_new(model_path.encode('utf-8'), sample_rate)
+        self._sample_rate = sample_rate  # Constant
         self._window_size_samples = self.lib.SileroVAD_get_window_size_samples(self.obj)  # Constant
 
     def __del__(self):
         if self.obj:
             self.lib.SileroVAD_delete(self.obj)
+
+    @property
+    def sample_rate(self):
+        return self._sample_rate
 
     @property
     def window_size_samples(self):
