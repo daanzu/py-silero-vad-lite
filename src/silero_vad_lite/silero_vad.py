@@ -4,7 +4,18 @@ import os
 import platform
 
 class SileroVAD:
+
     def __init__(self, sample_rate, model_path=None):
+        """
+        Initializes the SileroVAD object.
+
+        Args:
+            sample_rate (int): The sample rate of the audio.
+            model_path (str, optional): The path to the model file. If not provided, the default model included in the package will be used.
+
+        Returns:
+            SileroVAD: The SileroVAD object.
+        """
         if model_path is None:
             model_path = self._get_model_path()
 
@@ -29,18 +40,48 @@ class SileroVAD:
         self._window_size_samples = self.lib.SileroVAD_get_window_size_samples(self.obj)  # Constant
 
     def __del__(self):
+        """
+        Destructor method for the SileroVAD object.
+        """
         if self.obj:
             self.lib.SileroVAD_delete(self.obj)
 
     @property
     def sample_rate(self):
+        """
+        Returns the sample rate of the audio.
+
+        Returns:
+            int: The sample rate of the audio.
+        """
         return self._sample_rate
 
     @property
     def window_size_samples(self):
+        """
+        Returns the window size in samples.
+
+        Returns:
+            int: The window size in samples.
+        """
         return self._window_size_samples
 
     def process(self, data):
+        """
+        Process the input data using the Silero VAD model, and return the VAD score.
+
+        Note: If you want to pass in a numpy ndarray, you can either convert it to a supported ctypes.Array using `np.ctypeslib.as_ctypes(np_array)`, or pass in `memoryview(np_array)`.
+        Note: You cannot pass in read-only data. While the data should not be modified by the function, it must be writable to be able to run the model on it without copying it.
+
+        Args:
+            data: The input data to be processed. It can be of type bytes, bytearray, memoryview, array.array, or ctypes.Array. It must consist of 32-bit floating-point PCM audio samples. The length of the data in samples must be exactly equal to the window size, which is 32ms at the sample rate.
+
+        Returns:
+            float: The VAD score (likelihood of voice activity) between 0 and 1 (inclusive).
+
+        Raises:
+            ValueError: If the data is empty, has an invalid length, or is of an unsupported type.
+        """
         length = len(data)
         if length <= 0:
             raise ValueError("Data must not be empty")
@@ -85,12 +126,12 @@ class SileroVAD:
 
     @classmethod
     def _get_lib_path(cls):
-        # TODO: Implement a proper way to get the library path
+        # TODO: Implement a proper modern way to get the library path
         # Data Files Support - setuptools 75.1.0.post20240916 documentation (https://setuptools.pypa.io/en/latest/userguide/datafiles.html#accessing-data-files-at-runtime)
         return os.path.join(os.path.dirname(__file__), 'data', cls._get_lib_name())
 
     @staticmethod
     def _get_model_path():
-        # TODO: Implement a proper way to get the model path
+        # TODO: Implement a proper modern way to get the model path
         # Data Files Support - setuptools 75.1.0.post20240916 documentation (https://setuptools.pypa.io/en/latest/userguide/datafiles.html#accessing-data-files-at-runtime)
         return os.path.join(os.path.dirname(__file__), 'data', 'silero_vad.onnx')
