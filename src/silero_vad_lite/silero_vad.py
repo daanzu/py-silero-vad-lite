@@ -69,6 +69,8 @@ class SileroVAD:
             float_array = data
         else:
             float_array = (ctypes.c_float * length)(*data)
+        if length != self.window_size_samples:
+            raise ValueError(f"Data length must be equal to the window size ({self.window_size_samples})")
         return self.lib.SileroVAD_process(self.obj, float_array, length)
 
     @staticmethod
