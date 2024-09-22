@@ -22,13 +22,18 @@ link_directories(${ONNXRUNTIME_DIR}/lib)
 # Add the shared library target
 add_library(silero_vad_lite SHARED silero_vad.cpp)
 
-# Link against ONNX Runtime
+# Link against ONNX Runtime statically
 if(WIN32)
     target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/onnxruntime.lib)
 elseif(APPLE)
-    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.dylib)
+    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
 else()
-    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
+    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
+endif()
+
+# Add additional system libraries required for static linking
+if(UNIX AND NOT APPLE)
+    target_link_libraries(silero_vad_lite PRIVATE pthread dl)
 endif()
 
 # Set the output name of the library
