@@ -1,7 +1,16 @@
-#include <onnxruntime_cxx_api.h>
-#include <vector>
-#include <string>
+#include <codecvt>
 #include <iostream>
+#include <locale>
+#include <string>
+#include <vector>
+
+#include <onnxruntime_cxx_api.h>
+
+// Helper function to convert std::string (in UTF-8) to std::wstring, which is required for Windows
+std::wstring string_to_wstring(const std::string& str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    return converter.from_bytes(str);
+}
 
 class SileroVAD {
 private:
@@ -41,12 +50,19 @@ public:
         ort_sample_rate(1, sample_rate),
         window_size_samples(32 * (sample_rate / 1000))  // NOTE: ~32 ms * sample_rate_per_ms: 512 samples for 16 kHz, 256 samples for 8 kHz
     {
-        init_engine_threads(1, 1);
-        session = std::make_shared<Ort::Session>(env, model_path.c_str(), session_options);
-
         if (sample_rate != 16000 && sample_rate != 8000) {
             throw std::invalid_argument("Sample rate must be 16000 or 8000");
         }
+
+        init_engine_threads(1, 1);
+        #ifdef _WIN32
+            const ORTCHAR_T* model_path_ort = string_to_wstring(model_path).c_str();
+        #else
+            const ORTCHAR_T* model_path_ort = model_path.c_str();
+        #endif
+        session = std::make_shared<Ort::Session>(env, model_path_ort, session_options);
+        std::cerr << "Model loaded" << std::endl;
+        std::cerr << "Model loaded: " << session.get() << std::endl;
         ort_input_node_shape[1] = window_size_samples;
     }
 
@@ -77,20 +93,26 @@ public:
     }
 };
 
+#ifdef _WIN32
+#define EXPORT_API __declspec(dllexport)
+#else
+#define EXPORT_API
+#endif
+
 extern "C" {
-    SileroVAD* SileroVAD_new(const char* model_path, int sample_rate) {
+    EXPORT_API SileroVAD* SileroVAD_new(const char* model_path, int sample_rate) {
         return new SileroVAD(model_path, sample_rate);
     }
 
-    void SileroVAD_delete(SileroVAD* vad) {
+    EXPORT_API void SileroVAD_delete(SileroVAD* vad) {
         delete vad;
     }
 
-    float SileroVAD_process(SileroVAD* vad, float* data, size_t size) {
+    EXPORT_API float SileroVAD_process(SileroVAD* vad, float* data, size_t size) {
         return vad->predict(data, size);
     }
 
-    size_t SileroVAD_get_window_size_samples(SileroVAD* vad) {
+    EXPORT_API size_t SileroVAD_get_window_size_samples(SileroVAD* vad) {
         return vad->window_size_samples;
     }
 }

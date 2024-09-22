@@ -3,6 +3,17 @@ project(silero_vad_lite)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# Set the output directory, so that the library is built directly into the package directory
+# NOTE: We need to set "library" on linux for the .so, and "runtime" on windows for the .dll (and "_config" to avoid placing it in a "Release" or "Debug" subdirectory)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PACKAGE_DATA_OUTPUT_DIRECTORY})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PACKAGE_DATA_OUTPUT_DIRECTORY})
+# For multi-config builds (e.g., Visual Studio)
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PACKAGE_DATA_OUTPUT_DIRECTORY})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PACKAGE_DATA_OUTPUT_DIRECTORY})
+endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
+
 # Set ONNX Runtime path
 set(ONNXRUNTIME_DIR "${CMAKE_BINARY_DIR}/onnxruntime")
 include_directories(${ONNXRUNTIME_DIR}/include)
@@ -12,7 +23,13 @@ link_directories(${ONNXRUNTIME_DIR}/lib)
 add_library(silero_vad_lite SHARED silero_vad.cpp)
 
 # Link against ONNX Runtime
-target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
+if(WIN32)
+    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/onnxruntime.lib)
+elseif(APPLE)
+    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.dylib)
+else()
+    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
+endif()
 
 # Set the output name of the library
 if(WIN32)
@@ -40,3 +57,4 @@ install(TARGETS silero_vad_lite DESTINATION .)
 
 # Print debug info
 # message(STATUS "ONNXRUNTIME_DIR: ${ONNXRUNTIME_DIR}")
+# message(STATUS "PACKAGE_OUTPUT_DIRECTORY: ${PACKAGE_OUTPUT_DIRECTORY}")
