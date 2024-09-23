@@ -2,7 +2,7 @@ import glob
 import platform
 import shutil
 import zipfile
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, find_namespace_packages, Extension
 from setuptools.command.build_ext import build_ext
 from setuptools.dist import Distribution
 import os
@@ -129,7 +129,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/daanzu/py-silero-vad-lite',
-    packages=find_packages(where='src'),
+    packages=find_namespace_packages(where='src'),
     ext_modules=[CMakeExtension('silero_vad_lite', sourcedir='.')],
     cmdclass=dict(build_ext=CMakeBuild),
     package_dir={'': 'src'},
