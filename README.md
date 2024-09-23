@@ -1,6 +1,10 @@
 # Silero VAD Lite
 
+**ATTENTION: Not ready for public use yet.**
+
 Silero VAD Lite is a lightweight Python wrapper for the Silero Voice Activity Detection (VAD) model using ONNX Runtime. This package provides a simple interface to use the Silero VAD model without the need for the full ONNX Runtime Python package.
+
+For more information, you can visit the [original Silero VAD repository](https://github.com/snakers4/silero-vad).
 
 ## Installation
 
