@@ -22,18 +22,28 @@ link_directories(${ONNXRUNTIME_DIR}/lib)
 # Add the shared library target
 add_library(silero_vad_lite SHARED silero_vad.cpp)
 
-# Link against ONNX Runtime statically
+# Link against ONNX Runtime
+option(ONNXRUNTIME_STATIC "Link against ONNX Runtime statically" ON)
+# NOTE: Non-static not supported. On windows, builds but does not load/run correctly; on apple, not tested; on linux, builds and runs correctly, but maybe RPATH issues finding the .so
 if(WIN32)
     target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/onnxruntime.lib)
+    if(ONNXRUNTIME_STATIC)
+        target_compile_options(silero_vad_lite PRIVATE $<$<CONFIG:Debug>:/MTd> $<$<CONFIG:Release>:/MT>)
+    endif()
 elseif(APPLE)
-    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
+    if(ONNXRUNTIME_STATIC)
+        target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
+    else()
+        target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.dylib)
+    endif()
 else()
-    target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
-endif()
-
-# Add additional system libraries required for static linking
-if(UNIX AND NOT APPLE)
-    target_link_libraries(silero_vad_lite PRIVATE pthread dl)
+    if(ONNXRUNTIME_STATIC)
+        target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
+        # Add additional system libraries required for static linking
+        target_link_libraries(silero_vad_lite PRIVATE pthread dl)
+    else()
+        target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
+    endif()
 endif()
 
 # Set the output name of the library
@@ -42,6 +52,7 @@ if(WIN32)
         OUTPUT_NAME "silero_vad_lite"
         PREFIX ""
         SUFFIX ".dll"
+        # WINDOWS_EXPORT_ALL_SYMBOLS TRUE
     )
 elseif(APPLE)
     set_target_properties(silero_vad_lite PROPERTIES

@@ -1,6 +1,7 @@
 src/silero_vad_lite/data/*.so
 src/silero_vad_lite/data/*.dylib
 src/silero_vad_lite/data/*.dll
+tmp/
 
 # Ignore compiled Python files
 *.pyc
