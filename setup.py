@@ -153,4 +153,9 @@ setup(
         'Operating System :: MacOS :: MacOS X',
     ],
     python_requires='>=3.6',
+    extras_require={
+        'dev': [
+            'pytest ~= 8.3',
+        ],
+    },
 )
