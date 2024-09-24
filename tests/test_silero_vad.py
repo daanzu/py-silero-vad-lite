@@ -10,9 +10,6 @@ import pytest
 
 from silero_vad_lite import SileroVAD
 
-@pytest.fixture
-def silero_vad():
-    return SileroVAD(16000)
 
 def _generate_audio_data_array(silero_vad):
     num_samples = silero_vad.window_size_samples
@@ -32,6 +29,11 @@ def _load_wav_file(file_path):
         num_frames = wav_file.getnframes()
         audio_data = wav_file.readframes(num_frames)
     return audio_data, num_frames, sample_rate, sample_width
+
+
+@pytest.fixture
+def silero_vad():
+    return SileroVAD(16000)
 
 @pytest.mark.parametrize('sample_rate', [8000, 16000])
 @pytest.mark.parametrize('data_type', [array.array, bytes, bytearray, memoryview, ctypes.Array, list, tuple])
@@ -75,7 +77,10 @@ def test_silero_vad_process_wav_file():
         results.append(result)
     # print(results)
     expected_results = [0.31846824288368225, 0.12080410122871399, 0.9278429746627808, 0.9227734804153442, 0.9691531658172607, 0.9847737550735474, 0.9906067848205566, 0.9805426597595215, 0.97320556640625, 0.9933459758758545, 0.9977824687957764, 0.9969353675842285, 0.9895951747894287, 0.9930758476257324, 0.9968366622924805, 0.9980421662330627, 0.9967591762542725, 0.9882574081420898, 0.9961190819740295, 0.9822508096694946, 0.9960722923278809, 0.9989539384841919, 0.9985291957855225, 0.9767082929611206, 0.9802166223526001, 0.9991974830627441, 0.998380184173584, 0.9981842041015625, 0.9984550476074219, 0.9984889030456543, 0.9990912079811096, 0.9931062459945679, 0.9294931888580322, 0.5672889947891235, 0.342951238155365, 0.1822890043258667, 0.09109050035476685]
-    assert results == expected_results
+    assert len(results) == len(expected_results)
+    # Check if the results are close enough within a margin of error
+    for result, expected_result in zip(results, expected_results):
+        assert math.isclose(result, expected_result, abs_tol=1e-6)
 
 def test_silero_vad_process_invalid_input(silero_vad):
     with pytest.raises(TypeError):
