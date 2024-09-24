@@ -38,6 +38,8 @@ jobs:
           CIBW_ARCHS: native
           # Instead of cross-compiling, we build the native archs on each of the two macos runners above
           # CIBW_ARCHS_MACOS: x86_64 arm64
+          # Onnxruntime has a minimum target of 11.0, so we must match that
+          MACOSX_DEPLOYMENT_TARGET: 11.0
           # Skip building wheels for musllinux, because of limited onnxruntime library support
           CIBW_SKIP: '*-musllinux_*'
           CIBW_TEST_COMMAND: pytest {package}/tests
