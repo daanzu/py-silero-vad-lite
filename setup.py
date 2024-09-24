@@ -41,6 +41,8 @@ class CMakeBuild(build_ext):
         cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
         if not platform.system() == 'Windows':
             build_args += ['--', '-j2']
+        if platform.system() == 'Darwin':
+            cmake_args += ['-DONNXRUNTIME_STATIC=OFF']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''), self.distribution.get_version())
@@ -57,7 +59,7 @@ class CMakeBuild(build_ext):
             return onnxruntime_dir
         os.makedirs(onnxruntime_dir)
 
-        onnxruntime_static = True
+        onnxruntime_static = platform.system() != 'Darwin'
         # NOTE: See CMakelists.txt for ONNXRUNTIME_STATIC and support info
         if not onnxruntime_static:
             # Releases · microsoft/onnxruntime (https://github.com/microsoft/onnxruntime/releases)
