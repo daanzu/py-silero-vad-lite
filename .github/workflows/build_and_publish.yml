@@ -34,10 +34,12 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21.1
         env:
-          # configure cibuildwheel to build native archs only, because of limited onnxruntime library support
+          # Configure cibuildwheel to build native archs only (64-bit), because of limited onnxruntime library support
           CIBW_ARCHS: native
-          # instead of cross-compiling, we build the native archs on each of the two macos runners above
+          # Instead of cross-compiling, we build the native archs on each of the two macos runners above
           # CIBW_ARCHS_MACOS: x86_64 arm64
+          # Skip building wheels for musllinux, because of limited onnxruntime library support
+          CIBW_SKIP: '*-musllinux_*'
           CIBW_TEST_COMMAND: pytest {package}/tests
           CIBW_TEST_EXTRAS: dev
 
@@ -66,11 +68,11 @@ jobs:
     # environment: pypi
     permissions:
       id-token: write
-    # upload to PyPI on a release that is marked as published
+    # Upload to PyPI on a release that is marked as published
     # if: github.event_name == 'release' && github.event.action == 'published'
-    # or, alternatively, upload to PyPI on every tag starting with 'v' (remove on: release above to use this)
+    # Or, alternatively, upload to PyPI on every tag starting with 'v' (remove on: release above to use this)
     # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    # or, either of the above
+    # Or, either of the above
     if: (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
     steps:
       - uses: actions/download-artifact@v4
