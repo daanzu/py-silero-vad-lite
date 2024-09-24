@@ -155,7 +155,7 @@ setup(
     python_requires='>=3.6',
     extras_require={
         'dev': [
-            'pytest ~= 8.3',
+            'pytest >= 7.0.0',
         ],
     },
 )
