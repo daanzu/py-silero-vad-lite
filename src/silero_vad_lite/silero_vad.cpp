@@ -62,8 +62,6 @@ public:
             const ORTCHAR_T* model_path_ort = model_path.c_str();
         #endif
         session = std::make_shared<Ort::Session>(env, model_path_ort, session_options);
-        std::cerr << "Model loaded" << std::endl;
-        std::cerr << "Model loaded: " << session.get() << std::endl;
         ort_input_node_shape[1] = window_size_samples;
     }
 
