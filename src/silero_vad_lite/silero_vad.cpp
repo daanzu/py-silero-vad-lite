@@ -56,7 +56,8 @@ public:
 
         init_engine_threads(1, 1);
         #ifdef _WIN32
-            const ORTCHAR_T* model_path_ort = string_to_wstring(model_path).c_str();
+            const auto model_path_wstr = string_to_wstring(model_path);
+            const ORTCHAR_T* model_path_ort = model_path_wstr.c_str();
         #else
             const ORTCHAR_T* model_path_ort = model_path.c_str();
         #endif
@@ -101,7 +102,12 @@ public:
 
 extern "C" {
     EXPORT_API SileroVAD* SileroVAD_new(const char* model_path, int sample_rate) {
-        return new SileroVAD(model_path, sample_rate);
+        try {
+            return new SileroVAD(model_path, sample_rate);
+        } catch (const std::exception& e) {
+            std::cerr << "Error in SileroVAD_new: " << e.what() << std::endl;
+            return nullptr;
+        }
     }
 
     EXPORT_API void SileroVAD_delete(SileroVAD* vad) {
