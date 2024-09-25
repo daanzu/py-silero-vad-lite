@@ -40,6 +40,9 @@ jobs:
           # CIBW_ARCHS_MACOS: x86_64 arm64
           # Onnxruntime has a minimum target of 11.0, so we must match that
           MACOSX_DEPLOYMENT_TARGET: 11.0
+          # Avoid wheel "is not a supported wheel on this platform" errors on macos-13 runner, due to MacOS 11+ misreporting its version
+          # Related? https://github.com/pypa/cibuildwheel/issues/1767
+          SYSTEM_VERSION_COMPAT: 0
           # Skip building wheels for musllinux, because of limited onnxruntime library support
           CIBW_SKIP: '*-musllinux_*'
           CIBW_TEST_COMMAND: pytest {package}/tests
