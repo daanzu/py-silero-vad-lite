@@ -20,31 +20,31 @@ class SileroVAD:
             model_path = self._get_model_path()
 
         # Load the shared library
-        self.lib = ctypes.CDLL(self._get_lib_path())
+        self._lib = ctypes.CDLL(self._get_lib_path())
 
         # Define function prototypes
-        self.lib.SileroVAD_new.argtypes = [ctypes.c_char_p, ctypes.c_int]
-        self.lib.SileroVAD_new.restype = ctypes.c_void_p
+        self._lib.SileroVAD_new.argtypes = [ctypes.c_char_p, ctypes.c_int]
+        self._lib.SileroVAD_new.restype = ctypes.c_void_p
 
-        self.lib.SileroVAD_delete.argtypes = [ctypes.c_void_p]
+        self._lib.SileroVAD_delete.argtypes = [ctypes.c_void_p]
 
-        self.lib.SileroVAD_get_window_size_samples.argtypes = [ctypes.c_void_p]
-        self.lib.SileroVAD_get_window_size_samples.restype = ctypes.c_size_t
+        self._lib.SileroVAD_get_window_size_samples.argtypes = [ctypes.c_void_p]
+        self._lib.SileroVAD_get_window_size_samples.restype = ctypes.c_size_t
 
-        self.lib.SileroVAD_process.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_size_t]
-        self.lib.SileroVAD_process.restype = ctypes.c_float
+        self._lib.SileroVAD_process.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_size_t]
+        self._lib.SileroVAD_process.restype = ctypes.c_float
 
         # Create the C++ object
-        self._obj = self.lib.SileroVAD_new(model_path.encode('utf-8'), sample_rate)
+        self._obj = self._lib.SileroVAD_new(model_path.encode('utf-8'), sample_rate)
         self._sample_rate = sample_rate  # Constant
-        self._window_size_samples = self.lib.SileroVAD_get_window_size_samples(self._obj)  # Constant
+        self._window_size_samples = self._lib.SileroVAD_get_window_size_samples(self._obj)  # Constant
 
     def __del__(self):
         """
         Destructor method for the SileroVAD object.
         """
         if hasattr(self, '_obj'):
-            self.lib.SileroVAD_delete(self._obj)
+            self._lib.SileroVAD_delete(self._obj)
             del self._obj
 
     @property
@@ -113,7 +113,7 @@ class SileroVAD:
             float_array = (ctypes.c_float * length)(*data)
         if length != self.window_size_samples:
             raise ValueError(f"Data length must be equal to the window size ({self.window_size_samples})")
-        return self.lib.SileroVAD_process(self._obj, float_array, length)
+        return self._lib.SileroVAD_process(self._obj, float_array, length)
 
     @staticmethod
     def _get_lib_name():
