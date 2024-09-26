@@ -35,16 +35,17 @@ class SileroVAD:
         self.lib.SileroVAD_process.restype = ctypes.c_float
 
         # Create the C++ object
-        self.obj = self.lib.SileroVAD_new(model_path.encode('utf-8'), sample_rate)
+        self._obj = self.lib.SileroVAD_new(model_path.encode('utf-8'), sample_rate)
         self._sample_rate = sample_rate  # Constant
-        self._window_size_samples = self.lib.SileroVAD_get_window_size_samples(self.obj)  # Constant
+        self._window_size_samples = self.lib.SileroVAD_get_window_size_samples(self._obj)  # Constant
 
     def __del__(self):
         """
         Destructor method for the SileroVAD object.
         """
-        if self.obj:
-            self.lib.SileroVAD_delete(self.obj)
+        if hasattr(self, '_obj'):
+            self.lib.SileroVAD_delete(self._obj)
+            del self._obj
 
     @property
     def sample_rate(self):
@@ -112,7 +113,7 @@ class SileroVAD:
             float_array = (ctypes.c_float * length)(*data)
         if length != self.window_size_samples:
             raise ValueError(f"Data length must be equal to the window size ({self.window_size_samples})")
-        return self.lib.SileroVAD_process(self.obj, float_array, length)
+        return self.lib.SileroVAD_process(self._obj, float_array, length)
 
     @staticmethod
     def _get_lib_name():
