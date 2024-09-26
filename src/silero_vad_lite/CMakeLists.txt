@@ -41,8 +41,6 @@ elseif(APPLE)
 else()
     if(ONNXRUNTIME_STATIC)
         target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
-        # Add additional system libraries required for static linking
-        target_link_libraries(silero_vad_lite PRIVATE pthread dl)
     else()
         target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
     endif()
