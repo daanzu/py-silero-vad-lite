@@ -19,6 +19,9 @@ set(ONNXRUNTIME_DIR "${CMAKE_BINARY_DIR}/onnxruntime")
 include_directories(${ONNXRUNTIME_DIR}/include)
 link_directories(${ONNXRUNTIME_DIR}/lib)
 
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
 # Add the shared library target
 add_library(silero_vad_lite SHARED silero_vad.cpp)
 
