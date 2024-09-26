@@ -23,7 +23,6 @@ class CMakeBuild(build_ext):
         except OSError:
             raise RuntimeError("CMake must be installed to build the following extensions: " + ", ".join(e.name for e in self.extensions))
 
-        self.download_onnxruntime()
         for ext in self.extensions:
             self.build_extension(ext)
 
@@ -41,8 +40,11 @@ class CMakeBuild(build_ext):
         cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
         if not platform.system() == 'Windows':
             build_args += ['--', '-j2']
-        if platform.system() == 'Darwin':
-            cmake_args += ['-DONNXRUNTIME_STATIC=OFF']
+
+        onnxruntime_static_default = 'OFF' if platform.system() == 'Darwin' else 'ON'
+        onnxruntime_static = os.environ.get('SILERO_VAD_LITE_ONNXRUNTIME_STATIC', onnxruntime_static_default) == 'ON'
+        cmake_args += [f'-DONNXRUNTIME_STATIC={"ON" if onnxruntime_static else "OFF"}']
+        onnxruntime_dir = self.download_onnxruntime(onnxruntime_static)
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''), self.distribution.get_version())
@@ -53,14 +55,12 @@ class CMakeBuild(build_ext):
         print(f"CMake: Building: {['cmake', '--build', '.'] + build_args} in {self.build_temp}")
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-    def download_onnxruntime(self):
+    def download_onnxruntime(self, onnxruntime_static):
         onnxruntime_dir = os.path.join(self.build_temp, 'onnxruntime')
         if os.path.exists(onnxruntime_dir):
             return onnxruntime_dir
         os.makedirs(onnxruntime_dir)
 
-        onnxruntime_static = platform.system() != 'Darwin'
-        # NOTE: See CMakelists.txt for ONNXRUNTIME_STATIC and support info
         if not onnxruntime_static:
             # Releases · microsoft/onnxruntime (https://github.com/microsoft/onnxruntime/releases)
             onnxruntime_version = '1.19.2'

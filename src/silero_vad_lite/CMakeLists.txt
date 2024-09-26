@@ -23,8 +23,7 @@ link_directories(${ONNXRUNTIME_DIR}/lib)
 add_library(silero_vad_lite SHARED silero_vad.cpp)
 
 # Link against ONNX Runtime
-option(ONNXRUNTIME_STATIC "Link against ONNX Runtime statically" ON)
-# NOTE: Non-static not supported. On windows, builds but does not load/run correctly; on apple, not tested; on linux, builds and runs correctly, but maybe RPATH issues finding the .so
+option(ONNXRUNTIME_STATIC "Link against ONNX Runtime statically" OFF)
 if(WIN32)
     target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/onnxruntime.lib)
     if(ONNXRUNTIME_STATIC)
