@@ -41,7 +41,7 @@ class CMakeBuild(build_ext):
         if not platform.system() == 'Windows':
             build_args += ['--', '-j2']
 
-        onnxruntime_static_default = 'OFF' if platform.system() == 'Darwin' else 'ON'
+        onnxruntime_static_default = 'OFF'
         onnxruntime_static = os.environ.get('SILERO_VAD_LITE_ONNXRUNTIME_STATIC', onnxruntime_static_default) == 'ON'
         cmake_args += [f'-DONNXRUNTIME_STATIC={"ON" if onnxruntime_static else "OFF"}']
         onnxruntime_dir = self.download_onnxruntime(onnxruntime_static)
