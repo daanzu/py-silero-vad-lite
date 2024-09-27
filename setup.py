@@ -47,7 +47,7 @@ class CMakeBuild(build_ext):
         onnxruntime_dir = self.download_onnxruntime(onnxruntime_static)
         # If using shared onnxruntime, copy the onnxruntime library to the extension directory so that it can be found at runtime
         if not onnxruntime_static:
-            onnxruntime_lib_name = 'onnxruntime.dll' if platform.system() == 'Windows' else 'libonnxruntime.1.19.2.dylib' if platform.system() == 'Darwin' else 'libonnxruntime.so.1'
+            onnxruntime_lib_name = 'onnxruntime.dll' if platform.system() == 'Windows' else 'libonnxruntime.1.19.0.dylib' if platform.system() == 'Darwin' else 'libonnxruntime.so.1'
             shutil.copyfile(os.path.join(onnxruntime_dir, 'lib', onnxruntime_lib_name), os.path.join(extension_dir, onnxruntime_lib_name))
 
         env = os.environ.copy()
@@ -65,9 +65,10 @@ class CMakeBuild(build_ext):
             return onnxruntime_dir
         os.makedirs(onnxruntime_dir)
 
+        # NOTE: When updating onnxruntime_version below, you may also need to update onnxruntime_lib_name in build_extension above
         if not onnxruntime_static:
             # Releases · microsoft/onnxruntime (https://github.com/microsoft/onnxruntime/releases)
-            onnxruntime_version = '1.19.2'
+            onnxruntime_version = '1.19.0'
             if platform.system() == 'Windows':
                 onnxruntime_platform = 'win-x64'
                 onnxruntime_extension = 'zip'
