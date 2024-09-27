@@ -41,7 +41,7 @@ class CMakeBuild(build_ext):
         if not platform.system() == 'Windows':
             build_args += ['--', '-j2']
 
-        onnxruntime_static_default = 'OFF'
+        onnxruntime_static_default = 'OFF' if platform.system() == 'Darwin' else 'ON'
         onnxruntime_static = os.environ.get('SILERO_VAD_LITE_ONNXRUNTIME_STATIC', onnxruntime_static_default) == 'ON'
         cmake_args += [f'-DONNXRUNTIME_STATIC={"ON" if onnxruntime_static else "OFF"}']
         onnxruntime_dir = self.download_onnxruntime(onnxruntime_static)
@@ -49,6 +49,10 @@ class CMakeBuild(build_ext):
         if not onnxruntime_static:
             onnxruntime_lib_name = 'onnxruntime.dll' if platform.system() == 'Windows' else 'libonnxruntime.1.19.0.dylib' if platform.system() == 'Darwin' else 'libonnxruntime.so.1'
             shutil.copyfile(os.path.join(onnxruntime_dir, 'lib', onnxruntime_lib_name), os.path.join(extension_dir, onnxruntime_lib_name))
+        # Platform Support:
+        #   - Windows: Shared CI build fails in tests ("Windows fatal exception: access violation"), but succeeds in local build. Static CI build succeeds.
+        #   - Linux: Shared CI build fails in auditwheel ("auditwheel: error: cannot repair ___ to "manylinux2014_x86_64" ABI because of the presence of too-recent versioned symbols. You'll need to compile the wheel on an older toolchain."), but succeeds in local build. Static CI build succeeds.
+        #   - MacOS: Shared CI build fails in delocate ("delocate.libsana.DelocationError: Could not find all dependencies.") if we set RPATH to $ORIGIN, but succeeds without it. Static CI build fails ("ld: warning: object file (___libonnxruntime.a[x86_64][2](IOBinding.cc.o)) was built for newer 'macOS' version (14.0) than being linked (11.0)" and "Undefined symbols for architecture x86_64").
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''), self.distribution.get_version())
