@@ -47,27 +47,11 @@ else()
     endif()
 endif()
 
-# Set the output name of the library
-if(WIN32)
-    set_target_properties(silero_vad_lite PROPERTIES
-        OUTPUT_NAME "silero_vad_lite"
-        PREFIX ""
-        SUFFIX ".dll"
-        # WINDOWS_EXPORT_ALL_SYMBOLS TRUE
-    )
-elseif(APPLE)
-    set_target_properties(silero_vad_lite PROPERTIES
-        OUTPUT_NAME "silero_vad_lite"
-        PREFIX ""
-        SUFFIX ".dylib"
-    )
-else()
-    set_target_properties(silero_vad_lite PROPERTIES
-        OUTPUT_NAME "silero_vad_lite"
-        PREFIX ""
-        SUFFIX ".so"
-    )
-endif()
+# Prevent prefixing the library with "lib" on linux & macos
+set_target_properties(silero_vad_lite PROPERTIES PREFIX "")
+
+# Export all symbols on Windows, to avoid needing to export each function with __declspec(dllexport)
+# set_target_properties(silero_vad_lite PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 # Install the library
 install(TARGETS silero_vad_lite DESTINATION .)
