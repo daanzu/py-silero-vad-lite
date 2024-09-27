@@ -19,9 +19,6 @@ set(ONNXRUNTIME_DIR "${CMAKE_BINARY_DIR}/onnxruntime")
 include_directories(${ONNXRUNTIME_DIR}/include)
 link_directories(${ONNXRUNTIME_DIR}/lib)
 
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-
 # Add the shared library target
 add_library(silero_vad_lite SHARED silero_vad.cpp)
 
@@ -43,6 +40,10 @@ else()
         target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.a)
     else()
         target_link_libraries(silero_vad_lite PRIVATE ${ONNXRUNTIME_DIR}/lib/libonnxruntime.so)
+        set_target_properties(silero_vad_lite PROPERTIES
+            INSTALL_RPATH "$ORIGIN"
+            BUILD_WITH_INSTALL_RPATH TRUE
+        )
     endif()
 endif()
 
