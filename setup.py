@@ -44,10 +44,10 @@ class CMakeBuild(build_ext):
         onnxruntime_static_default = 'OFF' if platform.system() == 'Darwin' else 'ON'
         onnxruntime_static = os.environ.get('SILERO_VAD_LITE_ONNXRUNTIME_STATIC', onnxruntime_static_default) == 'ON'
         cmake_args += [f'-DONNXRUNTIME_STATIC={"ON" if onnxruntime_static else "OFF"}']
-        onnxruntime_dir = self.download_onnxruntime(onnxruntime_static)
+        onnxruntime_dir, onnxruntime_version = self.download_onnxruntime(onnxruntime_static)
         # If using shared onnxruntime, copy the onnxruntime library to the extension directory so that it can be found at runtime
         if not onnxruntime_static:
-            onnxruntime_lib_name = 'onnxruntime.dll' if platform.system() == 'Windows' else 'libonnxruntime.1.19.0.dylib' if platform.system() == 'Darwin' else 'libonnxruntime.so.1'
+            onnxruntime_lib_name = 'onnxruntime.dll' if platform.system() == 'Windows' else f'libonnxruntime.{onnxruntime_version}.dylib' if platform.system() == 'Darwin' else f'libonnxruntime.so.{onnxruntime_version.split(".")[0]}'
             shutil.copyfile(os.path.join(onnxruntime_dir, 'lib', onnxruntime_lib_name), os.path.join(extension_dir, onnxruntime_lib_name))
         # Platform Support:
         #   - Windows: Shared CI build fails in tests ("Windows fatal exception: access violation"), but succeeds in local build. Static CI build succeeds.
@@ -69,7 +69,6 @@ class CMakeBuild(build_ext):
             return onnxruntime_dir
         os.makedirs(onnxruntime_dir)
 
-        # NOTE: When updating onnxruntime_version below, you may also need to update onnxruntime_lib_name in build_extension above
         if not onnxruntime_static:
             # Releases · microsoft/onnxruntime (https://github.com/microsoft/onnxruntime/releases)
             onnxruntime_version = '1.19.0'
@@ -124,7 +123,7 @@ class CMakeBuild(build_ext):
             shutil.move(os.path.join(extracted_dir, item), onnxruntime_dir)
         os.rmdir(extracted_dir)
 
-        return onnxruntime_dir
+        return onnxruntime_dir, onnxruntime_version
 
 class BinaryDistribution(Distribution):
     # Ensure generation of platform-specific wheels
