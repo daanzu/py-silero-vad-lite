@@ -71,11 +71,11 @@ class SileroVAD:
         """
         Process the input data using the Silero VAD model, and return the VAD score.
 
-        Note: If you want to pass in a numpy ndarray, you can either convert it to a supported ctypes.Array using `np.ctypeslib.as_ctypes(np_array)`, or pass in `memoryview(np_array)`.
+        Note: If you want to pass in a `numpy.ndarray`, you have various options: convert it to a supported `ctypes.Array` using `np.ctypeslib.as_ctypes(np_array)`, or pass in `memoryview(np_array.data)` (the `.data` is required in order to obtain a writable view), or pass in `np_array.tobytes()`. The first two options are more efficient as they share the data from the original array without copying it.
         Note: You cannot pass in read-only data. While the data should not be modified by the function, it must be writable to be able to run the model on it without copying it.
 
         Args:
-            data: The input data to be processed. It can be of type bytes, bytearray, memoryview, array.array, or ctypes.Array. It must consist of 32-bit floating-point PCM audio samples. The length of the data in samples must be exactly equal to the window size, which is 32ms at the sample rate.
+            data: The input data to be processed. It can be of type `bytes`, `bytearray`, `memoryview`, `array.array`, or `ctypes.Array`. It must consist of 32-bit floating-point PCM audio samples, normalized to the range [-1, 1], mono channel, and at the sample rate specified during initialization. The length of the data in samples must be exactly equal to the window size, which is 32ms at the sample rate.
 
         Returns:
             float: The VAD score (likelihood of voice activity) between 0 and 1 (inclusive).
