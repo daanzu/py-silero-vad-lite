@@ -63,6 +63,16 @@ class CMakeBuild(build_ext):
         print(f"CMake: Building: {['cmake', '--build', '.'] + build_args} in {self.build_temp}")
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
+        # Post-build steps: strip libraries
+        if platform.system() in ('Linux', 'Darwin'):
+            libraries = ['silero_vad_lite' + ('.dylib' if platform.system() == 'Darwin' else '.so')]
+            if not onnxruntime_static:
+                libraries.append(onnxruntime_lib_name)
+            for library in libraries:
+                args = ['strip']
+                args += ['-x'] if platform.system() == 'Darwin' else ['--strip-unneeded']
+                subprocess.check_call(args + [os.path.join(extension_dir, library)])
+
     def download_onnxruntime(self, onnxruntime_static):
         onnxruntime_dir = os.path.join(self.build_temp, 'onnxruntime')
         if os.path.exists(onnxruntime_dir):
