@@ -11,7 +11,7 @@
 
 Silero VAD Lite is a **lightweight Python wrapper** for the high-quality [Silero Voice Activity Detection (VAD)](https://github.com/snakers4/silero-vad) model using ONNX Runtime.
 
-- **Simple interface** to use Silero VAD in Python
+- **Simple interface** to use Silero VAD in Python, supporting **streaming audio** processing
 - **Binary wheels** for **Windows, Linux, and MacOS** for easy installation
 - **Zero dependencies** for the installable package, because it includes internally:
     - The Silero VAD model in ONNX format, so you don't need to supply it separately
@@ -60,15 +60,15 @@ This project is licensed under the MIT License: see the [LICENSE](LICENSE) file 
 To build Silero VAD Lite from source:
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/daanzu/py-silero-vad-lite.git
-   cd silero-vad-lite
-   ```
+    ```
+    git clone https://github.com/daanzu/py-silero-vad-lite.git
+    cd silero-vad-lite
+    ```
 
 2. Install the package (editable mode likely won't work):
-   ```
-   pip install .[dev]
-   ```
+    ```
+    pip install .[dev]
+    ```
 
 This will compile the C++ extension and install the package, including the development dependencies for testing, which can be run with:
 
