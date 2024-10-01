@@ -74,11 +74,6 @@ class CMakeBuild(build_ext):
                 subprocess.check_call(args + [os.path.join(extension_dir, library)])
 
     def download_onnxruntime(self, onnxruntime_static):
-        onnxruntime_dir = os.path.join(self.build_temp, 'onnxruntime')
-        if os.path.exists(onnxruntime_dir):
-            return onnxruntime_dir
-        os.makedirs(onnxruntime_dir)
-
         if not onnxruntime_static:
             # Releases · microsoft/onnxruntime (https://github.com/microsoft/onnxruntime/releases)
             onnxruntime_version = '1.19.0'
@@ -110,6 +105,11 @@ class CMakeBuild(build_ext):
                 raise ValueError(f"Unsupported platform: {platform.system()}")
             onnxruntime_suffix = '-glibc2_17' if platform.system() == 'Linux' else ''
             onnxruntime_url = f'https://github.com/csukuangfj/onnxruntime-libs/releases/download/v{onnxruntime_version}/onnxruntime-{onnxruntime_platform}-{onnxruntime_version}{onnxruntime_suffix}.{onnxruntime_extension}'
+
+        onnxruntime_dir = os.path.join(self.build_temp, 'onnxruntime')
+        if os.path.exists(onnxruntime_dir):
+            return onnxruntime_dir, onnxruntime_version
+        os.makedirs(onnxruntime_dir)
 
         print(f"Downloading ONNXRuntime from {onnxruntime_url}")
         file_path, _ = urllib.request.urlretrieve(onnxruntime_url)
