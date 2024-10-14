@@ -33,7 +33,7 @@ jobs:
           platforms: all
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.1
+        uses: pypa/cibuildwheel@v2.21.3
         env:
           # Configure cibuildwheel to build native archs only (64-bit), because of limited onnxruntime library support
           CIBW_ARCHS: native
