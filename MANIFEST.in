@@ -1,1 +1,7 @@
-include src/silero_vad_lite/data/*
+include src/silero_vad_lite/data/*.onnx
+include src/silero_vad_lite/CMakeLists.txt
+include src/silero_vad_lite/*.cpp
+recursive-include tests *.py *.wav *.json
+
+recursive-include docs *.md
+recursive-include scripts *.py

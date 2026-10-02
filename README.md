@@ -25,7 +25,9 @@ You can install Silero VAD Lite using pip:
 python -m pip install silero-vad-lite
 ```
 
-This should install the package from the provided binary wheels, which are highly recommended. Installing from source is somewhat brittle and requires a C++ compiler.
+Supported wheel targets are standard (GIL-enabled) CPython 3.10–3.14 on Linux x86-64 (glibc 2.17+), Windows x86-64, and macOS Intel/Apple Silicon. Python 3.6–3.9 are no longer supported; existing older releases remain available. Free-threaded Python, PyPy, musl Linux, and Linux/Windows ARM wheels are not part of the current test matrix.
+
+Wheels include the Silero v5.1 model and ONNX Runtime 1.19.0. Building from a source distribution requires a C++ compiler and network access to download the matching native ONNX Runtime archive; Python build dependencies are installed automatically by pip. Linux and Windows use static ONNX Runtime linking, while macOS uses the shared runtime.
 
 ## Usage
 
@@ -62,7 +64,7 @@ To build Silero VAD Lite from source:
 1. Clone the repository:
     ```
     git clone https://github.com/daanzu/py-silero-vad-lite.git
-    cd silero-vad-lite
+    cd py-silero-vad-lite
     ```
 
 2. Install the package (editable mode likely won't work):
