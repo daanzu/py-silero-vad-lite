@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstring>
 #include <codecvt>
 #include <iostream>
 #include <locale>
@@ -23,9 +25,11 @@ private:
 
     std::vector<const char *> ort_input_node_names = {"input", "state", "sr"};
     std::vector<float> ort_state;
+    std::vector<float> context;
+    std::vector<float> input_with_context;
     std::vector<int64_t> ort_sample_rate;
 
-    int64_t ort_input_node_shape[2] = {1, 0};  // Element 1 will be set to window_size_samples
+    int64_t ort_input_node_shape[2] = {1, 0};  // Element 1 includes the window plus context
     const int64_t ort_state_node_shape[3] = {2, 1, 128};
     const int64_t ort_sample_rate_node_shape[1] = {1};
 
@@ -62,7 +66,15 @@ public:
             const ORTCHAR_T* model_path_ort = model_path.c_str();
         #endif
         session = std::make_shared<Ort::Session>(env, model_path_ort, session_options);
-        ort_input_node_shape[1] = window_size_samples;
+        context.resize(sample_rate == 16000 ? 64 : 32, 0.0f);
+        input_with_context.resize(context.size() + window_size_samples);
+        ort_input_node_shape[1] = input_with_context.size();
+    }
+
+    // Begin an independent stream without rebuilding the ONNX session.
+    void reset() {
+        std::fill(ort_state.begin(), ort_state.end(), 0.0f);
+        std::fill(context.begin(), context.end(), 0.0f);
     }
 
     // Run model to compute speech probability of exactly one window
@@ -70,7 +82,11 @@ public:
         if (size != window_size_samples) {
             throw std::invalid_argument("Input size must be equal to window_size_samples");
         }
-        Ort::Value input_ort = Ort::Value::CreateTensor<float>(memory_info, data, size, ort_input_node_shape, 2);
+        // Silero v5.1 consumes 4 ms of preceding audio in addition to the
+        // caller's 32 ms window. The first window has zero context.
+        std::copy(context.begin(), context.end(), input_with_context.begin());
+        std::copy(data, data + size, input_with_context.begin() + context.size());
+        Ort::Value input_ort = Ort::Value::CreateTensor<float>(memory_info, input_with_context.data(), input_with_context.size(), ort_input_node_shape, 2);
         Ort::Value state_ort = Ort::Value::CreateTensor<float>(memory_info, ort_state.data(), ort_state.size(), ort_state_node_shape, 3);
         Ort::Value sr_ort = Ort::Value::CreateTensor<int64_t>(memory_info, ort_sample_rate.data(), ort_sample_rate.size(), ort_sample_rate_node_shape, 1);
 
@@ -87,6 +103,7 @@ public:
         float speech_prob = ort_outputs[0].GetTensorMutableData<float>()[0];
         float *stateN_output = ort_outputs[1].GetTensorMutableData<float>();
         std::memcpy(ort_state.data(), stateN_output, ort_state.size() * sizeof(float));
+        std::copy(data + size - context.size(), data + size, context.begin());
 
         return speech_prob;
     }
@@ -110,6 +127,10 @@ extern "C" {
 
     EXPORT_API void SileroVAD_delete(SileroVAD* vad) {
         delete vad;
+    }
+
+    EXPORT_API void SileroVAD_reset(SileroVAD* vad) {
+        vad->reset();
     }
 
     EXPORT_API float SileroVAD_process(SileroVAD* vad, float* data, size_t size) {
