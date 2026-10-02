@@ -48,6 +48,25 @@ Requirements:
 
 See docstrings in the code for more details.
 
+### Streaming context and reset
+
+Each instance retains the recurrent state and the preceding 4 ms of audio
+(64 samples at 16 kHz, 32 samples at 8 kHz), as required by the bundled Silero
+v5.1 model. Keep supplying exactly 32 ms per call; do not prepend context yourself.
+The first window starts with zero context. This corrects the context-free
+processing in earlier releases, so speech probabilities will change.
+
+Call `vad.reset()` before an unrelated recording to clear both recurrent state
+and audio context without reloading the model. Processing after reset is
+identical to using a fresh instance at the same sample rate. Use a separate
+instance for each stream, and do not call `process()` or `reset()` concurrently
+on the same instance.
+
+```python
+vad.reset()
+probability = vad.process(first_window_of_new_recording)
+```
+
 ## License
 
 This project is licensed under the MIT License: see the [LICENSE](LICENSE) file for details.

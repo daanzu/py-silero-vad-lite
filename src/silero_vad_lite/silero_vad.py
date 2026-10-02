@@ -15,7 +15,13 @@ class SileroVAD:
 
         Returns:
             SileroVAD: The SileroVAD object.
+
+        Raises:
+            ValueError: If the sample rate is not 8000 or 16000.
+            RuntimeError: If the native model initialization fails.
         """
+        if sample_rate not in (8000, 16000):
+            raise ValueError("Sample rate must be 16000 or 8000")
         if model_path is None:
             model_path = self._get_model_path()
 
@@ -27,6 +33,10 @@ class SileroVAD:
         self._lib.SileroVAD_new.restype = ctypes.c_void_p
 
         self._lib.SileroVAD_delete.argtypes = [ctypes.c_void_p]
+        self._lib.SileroVAD_delete.restype = None
+
+        self._lib.SileroVAD_reset.argtypes = [ctypes.c_void_p]
+        self._lib.SileroVAD_reset.restype = None
 
         self._lib.SileroVAD_get_window_size_samples.argtypes = [ctypes.c_void_p]
         self._lib.SileroVAD_get_window_size_samples.restype = ctypes.c_size_t
@@ -36,6 +46,8 @@ class SileroVAD:
 
         # Create the C++ object
         self._obj = self._lib.SileroVAD_new(model_path.encode('utf-8'), sample_rate)
+        if not self._obj:
+            raise RuntimeError(f"Failed to initialize SileroVAD with model: {model_path}")
         self._sample_rate = sample_rate  # Constant
         self._window_size_samples = self._lib.SileroVAD_get_window_size_samples(self._obj)  # Constant
 
@@ -67,9 +79,20 @@ class SileroVAD:
         """
         return self._window_size_samples
 
+    def reset(self):
+        """Clear recurrent state and audio context before an independent stream.
+
+        Reuses the loaded model and preserves the sample rate and window size.
+        Calls to process() on this instance must not overlap with reset().
+        """
+        self._lib.SileroVAD_reset(self._obj)
+
     def process(self, data):
         """
         Process the input data using the Silero VAD model, and return the VAD score.
+
+        Consecutive calls are one continuous stream. Call reset() before processing
+        an unrelated recording. One instance must not be used concurrently.
 
         Note: If you want to pass in a `numpy.ndarray`, you have various options: convert it to a supported `ctypes.Array` using `np.ctypeslib.as_ctypes(np_array)`, or pass in `memoryview(np_array.data)` (the `.data` is required in order to obtain a writable view), or pass in `np_array.tobytes()`. The first two options are more efficient as they share the data from the original array without copying it.
         Note: You cannot pass in read-only data. While the data should not be modified by the function, it must be writable to be able to run the model on it without copying it.
