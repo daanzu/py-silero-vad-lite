@@ -27,7 +27,7 @@ python -m pip install silero-vad-lite
 
 Supported wheel targets are standard (GIL-enabled) CPython 3.10–3.14 on Linux x86-64 (glibc 2.17+), Windows x86-64, and macOS Intel/Apple Silicon. Python 3.6–3.9 are no longer supported; existing older releases remain available. Free-threaded Python, PyPy, musl Linux, and Linux/Windows ARM wheels are not part of the current test matrix.
 
-Wheels include the Silero v5.1 model and ONNX Runtime 1.19.0. Building from a source distribution requires a C++ compiler and network access to download the matching native ONNX Runtime archive; Python build dependencies are installed automatically by pip. Linux and Windows use static ONNX Runtime linking, while macOS uses the shared runtime.
+Wheels include the streaming model from Silero VAD v6.2.3 and ONNX Runtime 1.19.0. See [model provenance and compatibility](docs/model.md) for the pinned upstream source, checksums, and license. Building from a source distribution requires a C++ compiler and network access to download the matching native ONNX Runtime archive; Python build dependencies are installed automatically by pip. Linux and Windows use static ONNX Runtime linking, while macOS uses the shared runtime.
 
 ## Usage
 
@@ -52,9 +52,10 @@ See docstrings in the code for more details.
 
 Each instance retains the recurrent state and the preceding 4 ms of audio
 (64 samples at 16 kHz, 32 samples at 8 kHz), as required by the bundled Silero
-v5.1 model. Keep supplying exactly 32 ms per call; do not prepend context yourself.
-The first window starts with zero context. This corrects the context-free
-processing in earlier releases, so speech probabilities will change.
+streaming model. Keep supplying exactly 32 ms per call; do not prepend context yourself.
+The first window starts with zero context. Releases before 0.3.0 omitted this
+context. The model update from v5.1 to the v6.2.3 artifact also changes speech
+probabilities; recheck thresholds tuned against an older release.
 
 Call `vad.reset()` before an unrelated recording to clear both recurrent state
 and audio context without reloading the model. Processing after reset is
@@ -70,6 +71,8 @@ probability = vad.process(first_window_of_new_recording)
 ## License
 
 This project is licensed under the MIT License: see the [LICENSE](LICENSE) file for details.
+The bundled Silero model is also MIT-licensed; its upstream notice is included
+in [LICENSE.silero](src/silero_vad_lite/data/LICENSE.silero) in both wheels and source distributions.
 
 ## Acknowledgments
 

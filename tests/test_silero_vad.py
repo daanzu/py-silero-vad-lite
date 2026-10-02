@@ -78,7 +78,7 @@ def test_silero_vad_process_wav_file():
         assert 0 <= result <= 1
         results.append(result)
     # print(results)
-    reference = json.loads((Path(__file__).parent / 'fixtures/context_v5_1.json').read_text())
+    reference = json.loads((Path(__file__).parent / 'fixtures/context_v6_2_3.json').read_text())
     expected_results = reference['probabilities'][str(sample_rate)]
     assert len(results) == len(expected_results)
     # Check if the results are close enough within a margin of error

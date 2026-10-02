@@ -8,9 +8,10 @@ required = {
     "src/silero_vad_lite/silero_vad.cpp",
     "src/silero_vad_lite/silero_vad.py",
     "src/silero_vad_lite/data/silero_vad.onnx",
+    "src/silero_vad_lite/data/LICENSE.silero", "docs/model.md",
     "tests/test_silero_vad.py", "tests/sample.wav",
     "tests/test_context_reset.py", "tests/test_linux_stack.py",
-    "tests/test_wheel_smoke.py", "tests/fixtures/context_v5_1.json",
+    "tests/test_wheel_smoke.py", "tests/fixtures/context_v6_2_3.json",
     "tests/fixtures/README.md", "tests/generate_context_fixture.py",
 }
 with tarfile.open(sys.argv[1], "r:gz") as archive:
