@@ -142,7 +142,7 @@ class BinaryDistribution(Distribution):
 
 setup(
     name='silero-vad-lite',
-    version='0.3.0',
+    version='0.4.0',
     author='David Zurow',
     author_email='daanzu@gmail.com',
     description='Lightweight wrapper for Silero VAD using internal ONNX Runtime and with no python package dependencies',
