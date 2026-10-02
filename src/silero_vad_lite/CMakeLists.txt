@@ -47,6 +47,15 @@ else()
     endif()
 endif()
 
+# ONNX Runtime 1.19's Linux static archive contains MLAS assembly objects
+# without .note.GNU-stack. Older ELF linkers interpret those missing notes as
+# requiring an executable stack, although these kernels do not execute stack
+# data. Explicitly keep the stack non-executable; see docs/linux-stack.md.
+# LINK_FLAGS retains compatibility with our minimum CMake version (3.12).
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_property(TARGET silero_vad_lite APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-z,noexecstack")
+endif()
+
 # Prevent prefixing the library with "lib" on linux & macos
 set_target_properties(silero_vad_lite PROPERTIES PREFIX "")
 
