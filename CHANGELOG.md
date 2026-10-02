@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Update the bundled streaming ONNX model from Silero v5.1 to the artifact in upstream v6.2.3 (the latest stable release as of 2026-10-02), pinned to commit `5cd7945676eb32225748052e2e6a0580e4686a08`.
+- Speech probabilities change with the new weights. Recheck tuned thresholds; numerical parity tests establish integration correctness, not an accuracy improvement on a labeled corpus.
+- Keep the 8/16 kHz, 32 ms streaming API, 4 ms context, recurrent state, and `reset()` behavior unchanged. Keep ONNX Runtime 1.19.0 and zero runtime Python dependencies.
+- Include the upstream model's MIT notice and document its provenance. Regenerate the independent CPU reference scores for both sample rates and check model/license hashes in installed-wheel tests.
+
 ## 0.3.0
 
 ### Compatibility

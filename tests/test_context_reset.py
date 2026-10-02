@@ -1,4 +1,4 @@
-"""Numerical v5.1 parity without numpy, torch or Python ONNX Runtime."""
+"""Numerical v6.2.3 parity without numpy, torch or Python ONNX Runtime."""
 import array
 import hashlib
 import json
@@ -13,7 +13,7 @@ import pytest
 from silero_vad_lite import SileroVAD
 
 ROOT = Path(__file__).resolve().parent
-REFERENCE = json.loads((ROOT / 'fixtures/context_v5_1.json').read_text())
+REFERENCE = json.loads((ROOT / 'fixtures/context_v6_2_3.json').read_text())
 
 
 def windows(sample_rate):
@@ -28,6 +28,11 @@ def windows(sample_rate):
 def test_reference_inputs_unchanged():
     assert hashlib.sha256(Path(SileroVAD._get_model_path()).read_bytes()).hexdigest() == REFERENCE['model_sha256']
     assert hashlib.sha256((ROOT / 'sample.wav').read_bytes()).hexdigest() == REFERENCE['audio_sha256']
+
+
+def test_bundled_model_license():
+    license_path = Path(SileroVAD._get_model_path()).with_name('LICENSE.silero')
+    assert hashlib.sha256(license_path.read_bytes()).hexdigest() == REFERENCE['license_sha256']
 
 
 @pytest.mark.parametrize('sample_rate', [8000, 16000])
@@ -52,6 +57,15 @@ def test_reset_matches_fresh_instance(sample_rate):
     assert vad.window_size_samples == sample_rate * 32 // 1000
     for chunk in chunks:
         assert vad.process(chunk) == fresh.process(chunk)
+
+
+def test_interleaved_sample_rates_keep_independent_state():
+    streams = {rate: SileroVAD(rate) for rate in (8000, 16000)}
+    chunks = {rate: windows(rate) for rate in streams}
+    for index in range(min(map(len, chunks.values()))):
+        for rate, vad in streams.items():
+            assert vad.process(chunks[rate][index]) == pytest.approx(
+                REFERENCE['probabilities'][str(rate)][index], abs=1e-6, rel=1e-5)
 
 
 @pytest.mark.parametrize('sample_rate', [8000, 16000])

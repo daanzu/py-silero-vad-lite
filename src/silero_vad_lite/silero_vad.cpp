@@ -82,7 +82,7 @@ public:
         if (size != window_size_samples) {
             throw std::invalid_argument("Input size must be equal to window_size_samples");
         }
-        // Silero v5.1 consumes 4 ms of preceding audio in addition to the
+        // Silero's streaming model consumes 4 ms of preceding audio in addition to the
         // caller's 32 ms window. The first window has zero context.
         std::copy(context.begin(), context.end(), input_with_context.begin());
         std::copy(data, data + size, input_with_context.begin() + context.size());

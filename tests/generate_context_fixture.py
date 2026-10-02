@@ -2,7 +2,7 @@
 
 Run from the repository root: python tests/generate_context_fixture.py
 The NumPy-only reference below implements OnnxWrapper.__call__ from:
-https://github.com/snakers4/silero-vad/blob/v5.1/src/silero_vad/utils_vad.py
+https://github.com/snakers4/silero-vad/blob/5cd7945676eb32225748052e2e6a0580e4686a08/src/silero_vad/utils_vad.py
 No package implementation is imported or used to generate expected results.
 """
 import hashlib
@@ -15,13 +15,16 @@ import numpy as np
 import onnxruntime as ort
 
 ROOT = Path(__file__).resolve().parents[1]
-MODEL_SHA256 = '2623a2953f6ff3d2c1e61740c6cdb7168133479b267dfef114a4a3cc5bdd788f'
+UPSTREAM_COMMIT = '5cd7945676eb32225748052e2e6a0580e4686a08'
+MODEL_SHA256 = '1a153a22f4509e292a94e67d6f9b85e8deb25b4988682b7e174c65279d8788e3'
+LICENSE_SHA256 = '2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b'
 
 
 def main():
     assert ort.__version__ == '1.19.0', ort.__version__
     model = ROOT / 'src/silero_vad_lite/data/silero_vad.onnx'
     assert hashlib.sha256(model.read_bytes()).hexdigest() == MODEL_SHA256
+    assert hashlib.sha256(model.with_name('LICENSE.silero').read_bytes()).hexdigest() == LICENSE_SHA256
     options = ort.SessionOptions()
     options.inter_op_num_threads = 1
     options.intra_op_num_threads = 1
@@ -33,10 +36,13 @@ def main():
         pcm = wav.readframes(wav.getnframes())
     samples = [value / 32768.0 for (value,) in struct.iter_unpack('<h', pcm)]
     fixture = {
-        'reference': 'https://github.com/snakers4/silero-vad/blob/v5.1/src/silero_vad/utils_vad.py',
-        'model_source': 'https://github.com/snakers4/silero-vad/blob/v5.1/src/silero_vad/data/silero_vad.onnx',
-        'model_git_blob': 'b3e3a900c0d70e67b5e2b90a33ad856ee7947930',
+        'upstream_version': 'v6.2.3',
+        'upstream_commit': UPSTREAM_COMMIT,
+        'reference': f'https://github.com/snakers4/silero-vad/blob/{UPSTREAM_COMMIT}/src/silero_vad/utils_vad.py',
+        'model_source': f'https://github.com/snakers4/silero-vad/blob/{UPSTREAM_COMMIT}/src/silero_vad/data/silero_vad.onnx',
+        'model_git_blob': '80c5592ef1f4c9ede3e357bbd02eb863358a6a9d',
         'model_sha256': MODEL_SHA256,
+        'license_sha256': LICENSE_SHA256,
         'audio_sha256': hashlib.sha256(wav_path.read_bytes()).hexdigest(),
         'onnxruntime_version': ort.__version__,
         'description': 'sample.wav, normalized int16 PCM; every second sample for 8 kHz (deterministic test input, not production resampling); complete 32 ms windows only',
@@ -56,7 +62,7 @@ def main():
             probabilities.append(float(out[0, 0]))
             context = x[:, -context_size:]
         fixture['probabilities'][str(rate)] = probabilities
-    (ROOT / 'tests/fixtures/context_v5_1.json').write_text(json.dumps(fixture, indent=2) + '\n')
+    (ROOT / 'tests/fixtures/context_v6_2_3.json').write_text(json.dumps(fixture, indent=2) + '\n')
 
 
 if __name__ == '__main__':
