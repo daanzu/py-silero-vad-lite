@@ -6,8 +6,6 @@ on:
   push:
     branches: [main, develop]
     tags: ['v*']
-  release:
-    types: [published]
 
 permissions:
   contents: read
@@ -102,8 +100,8 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
-    # Pull requests and manual dispatches only build/test artifacts.
-    if: (github.event_name == 'release' && github.event.action == 'published') || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+    # Only v-tag pushes publish; branch pushes, PRs, and manual runs only build/test.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
       - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
         with:
